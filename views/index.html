@@ -1,0 +1,365 @@
+// the actual code is in ejs file this just here to store the content and make change and update the actual index.ejs later
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %> - 3D Premium Chess</title>
+    <link rel="stylesheet" href="/css/style3d.css">
+    <meta name="description" content="Play chess in stunning 3D with real-time multiplayer">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div class="loading-screen" id="loadingScreen">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <h2 class="loading-title">Loading 3D Chess</h2>
+            <div class="loading-bar">
+                <div class="loading-progress" id="loadingProgress"></div>
+            </div>
+            <p class="loading-text" id="loadingText">Initializing 3D engine...</p>
+        </div>
+    </div>
+
+    <!-- Main Game Container -->
+    <div class="game-container" id="gameContainer" style="display: none;">
+        
+        <!-- Top Bar -->
+        <header class="top-bar glass-effect">
+            <div class="top-bar-left">
+                <div class="logo-3d">
+                    <span class="logo-icon">♔</span>
+                    <div class="logo-text-container">
+                        <span class="logo-text">ChessElite</span>
+                        <span class="logo-subtitle">3D Edition</span>
+                    </div>
+                </div>
+                <div class="game-id-display">
+                    <span class="game-id-label">Game ID:</span>
+                    <span class="game-id-value" id="gameIdDisplay"><%= gameId %></span>
+                </div>
+            </div>
+            
+            <div class="top-bar-center">
+                <div class="role-badge-3d" id="roleInfo">
+                    <span class="badge-icon">👤</span>
+                    <span class="badge-text">Connecting...</span>
+                </div>
+                <div class="turn-indicator-3d" id="turnIndicator">
+                    <div class="turn-indicator-inner">
+                        <span class="turn-icon">⚪</span>
+                        <span class="turn-text">White to move</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="top-bar-right">
+                <button class="top-btn" id="viewModeBtn" title="Toggle Camera View">
+                    <span>📷</span>
+                </button>
+                <button class="top-btn" id="settingsBtn" title="Settings">
+                    <span>⚙️</span>
+                </button>
+                <div class="connection-badge" id="connectionStatus">
+                    <span class="connection-dot"></span>
+                    <span class="connection-label">Connected</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Game Area -->
+        <div class="game-content">
+            
+            <!-- Left Sidebar -->
+            <aside class="left-panel glass-effect">
+                <!-- Black Player Card -->
+                <div class="player-card-3d black-player" id="blackPlayerCard">
+                    <div class="player-header">
+                        <div class="player-avatar-3d">
+                            <div class="avatar-glow"></div>
+                            <span class="avatar-piece">♚</span>
+                        </div>
+                        <div class="player-details">
+                            <h3 class="player-name">Black Player</h3>
+                            <div class="player-stats">
+                                <span class="rating-badge">1500</span>
+                                <span class="status-badge waiting">Waiting</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="timer-container-3d">
+                        <div class="timer-display-3d" id="blackTimer">
+                            <span class="timer-digit">1</span>
+                            <span class="timer-digit">0</span>
+                            <span class="timer-colon">:</span>
+                            <span class="timer-digit">0</span>
+                            <span class="timer-digit">0</span>
+                        </div>
+                        <div class="timer-bar-3d">
+                            <div class="timer-fill-3d" id="blackTimerFill"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="captured-section">
+                        <div class="captured-header">
+                            <span>Captured Pieces</span>
+                            <span class="material-count" id="blackMaterial">+0</span>
+                        </div>
+                        <div class="captured-pieces-3d" id="capturedBlack">
+                            <span class="empty-captured">None yet</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Game Stats -->
+                <div class="stats-panel">
+                    <h3 class="panel-title">
+                        <span>📊</span>
+                        <span>Game Statistics</span>
+                    </h3>
+                    <div class="stats-grid-3d">
+                        <div class="stat-card">
+                            <div class="stat-value" id="moveCount">0</div>
+                            <div class="stat-label">Moves</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="gameTime">0:00</div>
+                            <div class="stat-label">Time</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="capturesCount">0</div>
+                            <div class="stat-label">Captures</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="checksCount">0</div>
+                            <div class="stat-label">Checks</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Players Status -->
+                <div class="players-panel">
+                    <h3 class="panel-title">
+                        <span>👥</span>
+                        <span>Players</span>
+                    </h3>
+                    <div class="players-list" id="playersList">
+                        <div class="player-status-item waiting" data-color="white">
+                            <span class="status-indicator"></span>
+                            <span class="player-label">White Player</span>
+                        </div>
+                        <div class="player-status-item waiting" data-color="black">
+                            <span class="status-indicator"></span>
+                            <span class="player-label">Black Player</span>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Center - 3D Board -->
+            <main class="board-area">
+                <!-- 3D Canvas Container -->
+                <div class="canvas-container" id="canvasContainer">
+                    <canvas id="chessCanvas"></canvas>
+                    
+                    <!-- 3D Overlay UI -->
+                    <div class="canvas-overlay">
+                        <div class="board-status" id="boardStatus"></div>
+                    </div>
+                </div>
+
+                <!-- Camera Controls -->
+                <div class="camera-controls glass-effect">
+                    <button class="camera-btn" id="resetCameraBtn" title="Reset Camera">
+                        <span>🎯</span>
+                        <span class="btn-label">Reset</span>
+                    </button>
+                    <button class="camera-btn" id="topViewBtn" title="Top View">
+                        <span>⬆️</span>
+                        <span class="btn-label">Top</span>
+                    </button>
+                    <button class="camera-btn" id="sideViewBtn" title="Side View">
+                        <span>↔️</span>
+                        <span class="btn-label">Side</span>
+                    </button>
+                    <button class="camera-btn" id="flipViewBtn" title="Flip Board">
+                        <span>🔄</span>
+                        <span class="btn-label">Flip</span>
+                    </button>
+                </div>
+
+                <!-- Game Controls -->
+                <div class="game-controls-3d glass-effect">
+                    <button class="control-btn-3d secondary" id="undoBtn">
+                        <span class="btn-icon">↩️</span>
+                        <span class="btn-label">Undo</span>
+                    </button>
+                    <button class="control-btn-3d secondary" id="drawBtn">
+                        <span class="btn-icon">🤝</span>
+                        <span class="btn-label">Draw</span>
+                    </button>
+                    <button class="control-btn-3d danger" id="resignBtn">
+                        <span class="btn-icon">🏳️</span>
+                        <span class="btn-label">Resign</span>
+                    </button>
+                    <button class="control-btn-3d primary" id="shareBtn">
+                        <span class="btn-icon">🔗</span>
+                        <span class="btn-label">Share</span>
+                    </button>
+                    <button class="control-btn-3d success" id="rematchBtn" style="display: none;">
+                        <span class="btn-icon">♻️</span>
+                        <span class="btn-label">Rematch</span>
+                    </button>
+                </div>
+            </main>
+
+            <!-- Right Sidebar -->
+            <aside class="right-panel glass-effect">
+                <!-- White Player Card -->
+                <div class="player-card-3d white-player" id="whitePlayerCard">
+                    <div class="player-header">
+                        <div class="player-avatar-3d">
+                            <div class="avatar-glow"></div>
+                            <span class="avatar-piece">♔</span>
+                        </div>
+                        <div class="player-details">
+                            <h3 class="player-name">White Player</h3>
+                            <div class="player-stats">
+                                <span class="rating-badge">1500</span>
+                                <span class="status-badge waiting">Waiting</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="timer-container-3d">
+                        <div class="timer-display-3d" id="whiteTimer">
+                            <span class="timer-digit">1</span>
+                            <span class="timer-digit">0</span>
+                            <span class="timer-colon">:</span>
+                            <span class="timer-digit">0</span>
+                            <span class="timer-digit">0</span>
+                        </div>
+                        <div class="timer-bar-3d">
+                            <div class="timer-fill-3d" id="whiteTimerFill"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="captured-section">
+                        <div class="captured-header">
+                            <span>Captured Pieces</span>
+                            <span class="material-count" id="whiteMaterial">+0</span>
+                        </div>
+                        <div class="captured-pieces-3d" id="capturedWhite">
+                            <span class="empty-captured">None yet</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Move History -->
+                <div class="history-panel">
+                    <h3 class="panel-title">
+                        <span>📜</span>
+                        <span>Move History</span>
+                    </h3>
+                    <div class="move-history-3d" id="moveHistory">
+                        <div class="empty-history">
+                            <span class="empty-icon">♟️</span>
+                            <p>No moves yet</p>
+                        </div>
+                    </div>
+                    <div class="history-controls-3d">
+                        <button class="history-btn-3d" id="historyFirst">⏮️</button>
+                        <button class="history-btn-3d" id="historyPrev">◀️</button>
+                        <button class="history-btn-3d" id="historyNext">▶️</button>
+                        <button class="history-btn-3d" id="historyLast">⏭️</button>
+                    </div>
+                </div>
+
+                <!-- 3D Settings -->
+                <div class="settings-panel">
+                    <h3 class="panel-title">
+                        <span>🎨</span>
+                        <span>3D Settings</span>
+                    </h3>
+                    <div class="settings-list">
+                        <div class="setting-item">
+                            <span class="setting-label">Shadows</span>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="shadowsToggle" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        <div class="setting-item">
+                            <span class="setting-label">Reflections</span>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="reflectionsToggle" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        <div class="setting-item">
+                            <span class="setting-label">Bloom Effect</span>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="bloomToggle" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        <div class="setting-item">
+                            <span class="setting-label">Auto Rotate</span>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="autoRotateToggle">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </div>
+
+    <!-- Game Over Modal -->
+    <div class="modal-overlay-3d" id="gameOverModal">
+        <div class="modal-3d glass-effect">
+            <div class="modal-glow"></div>
+            <div class="modal-content-3d">
+                <div class="result-icon-3d" id="resultIcon">🏆</div>
+                <h2 class="modal-title-3d" id="modalTitle">Game Over</h2>
+                <p class="modal-message-3d" id="modalMessage">Checkmate!</p>
+                <div class="modal-actions">
+                    <button class="modal-btn-3d primary" id="modalRematchBtn">
+                        <span>♻️</span>
+                        <span>New Game</span>
+                    </button>
+                    <button class="modal-btn-3d secondary" id="modalCloseBtn">
+                        <span>✕</span>
+                        <span>Close</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container-3d" id="toastContainer"></div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.socket.io/4.8.1/socket.io.min.js" 
+            integrity="sha384-mkQ3/7FUtcGyoppY6bz/PORYoGqOl7/aSUMn2ymDOJcapfS6PHqxhRTMh1RR0Q6+" 
+            crossorigin="anonymous"></script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js" 
+            integrity="sha512-xRllwz2gdZciIB+AkEbeq+gVhX8VB8XsfqeFbUh+SzHlN96dEduwtTuVuc2u9EROlmW9+yhRlxjif66ORpsgVA==" 
+            crossorigin="anonymous" 
+            referrerpolicy="no-referrer"></script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    
+    <script src="/js/chessgame3d.js"></script>
+</body>
+</html>
