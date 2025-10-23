@@ -443,21 +443,17 @@ class ChessGameClient {
             rating: parseInt(rating)
         };
 
-        // Hide modal
+        // Hide modal immediately
         const modal = document.getElementById('playerInfoModal');
         if (modal) {
-            gsap.to('.player-info-modal', {
-                scale: 0.8,
-                opacity: 0,
-                duration: 0.3,
-                onComplete: () => {
-                    modal.classList.add('hidden');
-                    this.joinGame();
-                }
-            });
+            modal.style.display = 'none';
+            modal.classList.add('hidden');
         }
 
         this.showToast(`Welcome, ${username}! 🎮`, 'success');
+        
+        // Join game
+        this.joinGame();
     }
 
     joinGame() {
