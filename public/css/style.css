@@ -252,62 +252,108 @@ body {
     font-size: 12px;
 }
 
-/* Timer Styles */
-.player-timer-container {
-    margin-bottom: 20px;
-}
+/* Add this CSS to your public/css/style.css file */
+/* Replace the Timer Styles section with these styles */
 
-.timer-display {
-    text-align: center;
-    font-size: 48px;
-    font-weight: 800;
-    font-family: 'Courier New', monospace;
-    margin-bottom: 12px;
+/* Player Info Modal */
+.player-info-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.9);
+    backdrop-filter: blur(10px);
     display: flex;
     align-items: center;
     justify-content: center;
+    z-index: 3000;
+    opacity: 1;
+    pointer-events: all;
+}
+
+.player-info-modal-overlay.hidden {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--transition-base);
+}
+
+.player-info-modal {
+    max-width: 500px;
+    width: 90%;
+    border-radius: var(--radius-xl);
+    padding: 40px;
+    animation: modalSlideIn 0.5s ease;
+}
+
+@keyframes modalSlideIn {
+    from {
+        transform: translateY(-50px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.player-info-modal .modal-header {
+    text-align: center;
+    margin-bottom: 32px;
+}
+
+.player-info-modal .modal-title {
+    font-size: 28px;
+    font-weight: 800;
     background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+    margin-bottom: 8px;
 }
 
-.timer-separator {
-    animation: blink 1s ease-in-out infinite;
+.player-info-form {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
 }
 
-@keyframes blink {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.3; }
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
 }
 
-.timer-bar {
-    height: 8px;
+.form-group label {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.form-group input {
+    padding: 14px 18px;
     background: var(--bg-primary);
-    border-radius: 4px;
-    overflow: hidden;
-    position: relative;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
+    font-size: 16px;
+    font-family: inherit;
+    transition: all var(--transition-base);
 }
 
-.timer-fill {
-    height: 100%;
-    background: linear-gradient(90deg, var(--success), var(--accent-primary));
-    width: 100%;
-    transition: width 1s linear;
-    position: relative;
+.form-group input:focus {
+    outline: none;
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.1);
 }
 
-.timer-fill::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
-    animation: shimmer 2s infinite;
+.form-group input::placeholder {
+    color: var(--text-tertiary);
 }
 
+/* Hide Timer Styles */
+.player-timer-container {
+    display: none;
+}
 @keyframes shimmer {
     to { transform: translateX(100%); }
 }
@@ -1356,4 +1402,5 @@ body {
 
 .fade-in {
     animation: fadeIn 0.5s ease;
+
 }
