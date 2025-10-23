@@ -270,9 +270,9 @@ body {
 }
 
 .player-info-modal-overlay.hidden {
+    display: none !important;
     opacity: 0;
     pointer-events: none;
-    transition: opacity var(--transition-base);
 }
 
 .player-info-modal {
@@ -1402,4 +1402,5 @@ body {
     animation: fadeIn 0.5s ease;
 
 }
+
 
