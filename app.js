@@ -21,17 +21,16 @@ class ChessGame {
         this.gameId = gameId;
         this.chess = new Chess();
         this.players = { white: null, black: null };
+        this.playerInfo = { white: null, black: null };
         this.spectators = new Set();
         this.moveHistory = [];
         this.gameStartTime = Date.now();
-        this.timers = { white: 600000, black: 600000 }; // 10 minutes each
-        this.lastMoveTime = Date.now();
-        this.activeTimer = null;
     }
 
-    addPlayer(socketId, color) {
+    addPlayer(socketId, color, playerInfo) {
         if (color === 'white' || color === 'black') {
             this.players[color] = socketId;
+            this.playerInfo[color] = playerInfo;
             return true;
         }
         return false;
@@ -44,10 +43,10 @@ class ChessGame {
     removePlayer(socketId) {
         if (this.players.white === socketId) {
             this.players.white = null;
-            this.stopTimer();
+            this.playerInfo.white = null;
         } else if (this.players.black === socketId) {
             this.players.black = null;
-            this.stopTimer();
+            this.playerInfo.black = null;
         } else {
             this.spectators.delete(socketId);
         }
@@ -61,29 +60,8 @@ class ChessGame {
                 fen: this.chess.fen(),
                 timestamp: Date.now()
             });
-            this.updateTimer();
         }
         return result;
-    }
-
-    updateTimer() {
-        const now = Date.now();
-        const elapsed = now - this.lastMoveTime;
-        const currentPlayer = this.chess.turn() === 'w' ? 'black' : 'white';
-        
-        this.timers[currentPlayer] -= elapsed;
-        this.lastMoveTime = now;
-    }
-
-    startTimer() {
-        this.lastMoveTime = Date.now();
-    }
-
-    stopTimer() {
-        if (this.activeTimer) {
-            clearInterval(this.activeTimer);
-            this.activeTimer = null;
-        }
     }
 
     getGameState() {
@@ -96,8 +74,12 @@ class ChessGame {
             isStalemate: this.chess.isStalemate(),
             isGameOver: this.chess.isGameOver(),
             moveHistory: this.moveHistory,
-            timers: this.timers,
-            players: this.players
+            players: {
+                white: this.players.white !== null,
+                black: this.players.black !== null,
+                whiteInfo: this.playerInfo.white,
+                blackInfo: this.playerInfo.black
+            }
         };
     }
 }
@@ -129,7 +111,10 @@ io.on('connection', (socket) => {
     let currentGame = null;
     let playerRole = null;
 
-    socket.on('joinGame', (gameId = 'default') => {
+    socket.on('joinGame', (data) => {
+        const gameId = data.gameId || 'default';
+        const playerInfo = data.playerInfo || { username: 'Player', rating: 1200 };
+        
         if (!games.has(gameId)) {
             games.set(gameId, new ChessGame(gameId));
         }
@@ -139,18 +124,17 @@ io.on('connection', (socket) => {
 
         // Assign role
         if (!currentGame.players.white) {
-            currentGame.addPlayer(socket.id, 'white');
+            currentGame.addPlayer(socket.id, 'white', playerInfo);
             playerRole = 'w';
             socket.emit('playerRole', { role: 'w', color: 'white' });
-            console.log(`Player ${socket.id} joined as White in game ${gameId}`);
+            console.log(`Player ${playerInfo.username} joined as White in game ${gameId}`);
         } else if (!currentGame.players.black) {
-            currentGame.addPlayer(socket.id, 'black');
+            currentGame.addPlayer(socket.id, 'black', playerInfo);
             playerRole = 'b';
             socket.emit('playerRole', { role: 'b', color: 'black' });
-            console.log(`Player ${socket.id} joined as Black in game ${gameId}`);
+            console.log(`Player ${playerInfo.username} joined as Black in game ${gameId}`);
             
             // Start game when both players join
-            currentGame.startTimer();
             io.to(gameId).emit('gameStart');
         } else {
             currentGame.addSpectator(socket.id);
@@ -256,8 +240,6 @@ io.on('connection', (socket) => {
 
         currentGame.chess.reset();
         currentGame.moveHistory = [];
-        currentGame.timers = { white: 600000, black: 600000 };
-        currentGame.startTimer();
 
         io.to(currentGame.gameId).emit('gameReset', currentGame.getGameState());
     });
