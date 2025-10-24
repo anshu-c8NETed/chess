@@ -252,64 +252,9 @@ body {
     font-size: 12px;
 }
 
-/* Timer Styles */
+/* Hide Timer Sections */
 .player-timer-container {
-    margin-bottom: 20px;
-}
-
-.timer-display {
-    text-align: center;
-    font-size: 48px;
-    font-weight: 800;
-    font-family: 'Courier New', monospace;
-    margin-bottom: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-}
-
-.timer-separator {
-    animation: blink 1s ease-in-out infinite;
-}
-
-@keyframes blink {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.3; }
-}
-
-.timer-bar {
-    height: 8px;
-    background: var(--bg-primary);
-    border-radius: 4px;
-    overflow: hidden;
-    position: relative;
-}
-
-.timer-fill {
-    height: 100%;
-    background: linear-gradient(90deg, var(--success), var(--accent-primary));
-    width: 100%;
-    transition: width 1s linear;
-    position: relative;
-}
-
-.timer-fill::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
-    animation: shimmer 2s infinite;
-}
-
-@keyframes shimmer {
-    to { transform: translateX(100%); }
+    display: none;
 }
 
 /* Captured Pieces */
@@ -612,6 +557,10 @@ body {
     50% { transform: translateY(-5px); }
 }
 
+@keyframes shimmer {
+    to { transform: translateX(100%); }
+}
+
 .status-badges {
     display: flex;
     gap: 8px;
@@ -714,6 +663,24 @@ body {
 .square.selected {
     background: linear-gradient(135deg, #7fb069, #6a9f5a) !important;
     box-shadow: inset 0 0 0 3px rgba(255, 255, 255, 0.5);
+}
+
+/* Premove Indicator */
+.square.premove {
+    position: relative;
+}
+
+.square.premove::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(245, 158, 11, 0.4);
+    animation: premovePulse 1.5s ease-in-out infinite;
+}
+
+@keyframes premovePulse {
+    0%, 100% { opacity: 0.4; }
+    50% { opacity: 0.7; }
 }
 
 .square.last-move {
@@ -1016,18 +983,6 @@ body {
     align-items: center;
     gap: 12px;
     transition: all var(--transition-base);
-    animation: slideInRight 0.3s ease;
-}
-
-@keyframes slideInRight {
-    from {
-        opacity: 0;
-        transform: translateX(-20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateX(0);
-    }
 }
 
 .move-item:hover {
@@ -1097,13 +1052,6 @@ body {
 
 .modal-overlay.show .modal {
     transform: scale(1);
-    animation: modalBounce 0.5s ease;
-}
-
-@keyframes modalBounce {
-    0% { transform: scale(0.9); }
-    50% { transform: scale(1.05); }
-    100% { transform: scale(1); }
 }
 
 .modal-header {
