@@ -24,31 +24,23 @@
         <!-- Left Sidebar -->
         <aside class="left-sidebar">
             <!-- Black Player Card -->
-            <div class="player-card black-player" id="blackPlayerCard">
+            <div class="player-card black-player glass-effect" id="blackPlayerCard">
                 <div class="player-avatar">
                     <div class="avatar-ring"></div>
                     <div class="avatar-icon">♔</div>
                 </div>
                 <div class="player-info">
-                    <h3 class="player-name">Black Player</h3>
+                    <h3 class="player-name">Waiting...</h3>
                     <div class="player-rating">
                         <span class="rating-badge">1500</span>
                         <span class="rating-label">Rating</span>
                     </div>
                 </div>
-                <div class="player-timer-container">
-                    <div class="timer-display" id="blackTimer">
-                        <span class="timer-minutes">10</span>
-                        <span class="timer-separator">:</span>
-                        <span class="timer-seconds">00</span>
-                    </div>
-                    <div class="timer-bar">
-                        <div class="timer-fill" id="blackTimerBar"></div>
-                    </div>
-                </div>
                 <div class="captured-pieces-container">
                     <div class="captured-label">Captured</div>
-                    <div class="captured-pieces" id="capturedBlack"></div>
+                    <div class="captured-pieces" id="capturedBlack">
+                        <span style="opacity: 0.5; font-size: 14px;">None</span>
+                    </div>
                     <div class="material-advantage" id="blackAdvantage"></div>
                 </div>
             </div>
@@ -124,9 +116,6 @@
                         <div class="chessboard" id="chessboard"></div>
                         <div class="board-glow"></div>
                     </div>
-
-                    <!-- Move Indicators -->
-                    <div class="last-move-indicator" id="lastMoveIndicator"></div>
                 </div>
 
                 <!-- Game Controls -->
@@ -158,31 +147,23 @@
         <!-- Right Sidebar -->
         <aside class="right-sidebar">
             <!-- White Player Card -->
-            <div class="player-card white-player" id="whitePlayerCard">
+            <div class="player-card white-player glass-effect" id="whitePlayerCard">
                 <div class="player-avatar">
                     <div class="avatar-ring"></div>
                     <div class="avatar-icon">♚</div>
                 </div>
                 <div class="player-info">
-                    <h3 class="player-name">White Player</h3>
+                    <h3 class="player-name">Waiting...</h3>
                     <div class="player-rating">
                         <span class="rating-badge">1500</span>
                         <span class="rating-label">Rating</span>
                     </div>
                 </div>
-                <div class="player-timer-container">
-                    <div class="timer-display" id="whiteTimer">
-                        <span class="timer-minutes">10</span>
-                        <span class="timer-separator">:</span>
-                        <span class="timer-seconds">00</span>
-                    </div>
-                    <div class="timer-bar">
-                        <div class="timer-fill" id="whiteTimerBar"></div>
-                    </div>
-                </div>
                 <div class="captured-pieces-container">
                     <div class="captured-label">Captured</div>
-                    <div class="captured-pieces" id="capturedWhite"></div>
+                    <div class="captured-pieces" id="capturedWhite">
+                        <span style="opacity: 0.5; font-size: 14px;">None</span>
+                    </div>
                     <div class="material-advantage" id="whiteAdvantage"></div>
                 </div>
             </div>
