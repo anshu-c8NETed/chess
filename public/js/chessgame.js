@@ -1,18 +1,11 @@
-// Modern Chess Game Client with GSAP Animations - FIXED VERSION
-console.log("🎮 ChessElite Client Loading...");
 
-// Check dependencies
-console.log("Checking dependencies:");
-console.log("- io available:", typeof io !== 'undefined');
-console.log("- Chess available:", typeof Chess !== 'undefined');
-console.log("- gsap available:", typeof gsap !== 'undefined');
+console.log("🎮 ChessElite Client Loading...");
 
 if (typeof io === 'undefined' || typeof Chess === 'undefined' || typeof gsap === 'undefined') {
     console.error("❌ Required dependencies not loaded");
     alert("Failed to load required libraries. Please refresh the page.");
 }
 
-// Wait for DOM
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initGame);
 } else {
@@ -21,13 +14,10 @@ if (document.readyState === 'loading') {
 
 function initGame() {
     console.log("✅ Initializing ChessElite...");
-    
-    // Show username modal first
     showUsernameModal();
 }
 
 function showUsernameModal() {
-    console.log("🔐 Showing username modal");
     const modal = document.createElement('div');
     modal.className = 'modal-overlay show';
     modal.innerHTML = `
@@ -69,7 +59,6 @@ function showUsernameModal() {
     const form = document.getElementById('playerInfoForm');
     const usernameInput = document.getElementById('usernameInput');
     
-    // Focus on username input
     setTimeout(() => usernameInput.focus(), 100);
     
     form.onsubmit = (e) => {
@@ -77,22 +66,16 @@ function showUsernameModal() {
         const username = usernameInput.value.trim();
         const rating = parseInt(document.getElementById('ratingInput').value) || 1500;
         
-        console.log("👤 User info:", username, rating);
-        
         if (username) {
-            // Store player info
             const playerInfo = { username, rating };
             
-            // Remove modal
             gsap.to(modal.querySelector('.modal'), {
                 scale: 0.8,
                 opacity: 0,
                 duration: 0.3,
                 onComplete: () => {
                     modal.remove();
-                    // Initialize game
                     try {
-                        console.log("🎯 Creating ChessGameClient instance...");
                         new ChessGameClient(playerInfo);
                     } catch (error) {
                         console.error("❌ Initialization failed:", error);
@@ -106,9 +89,6 @@ function showUsernameModal() {
 
 class ChessGameClient {
     constructor(playerInfo) {
-        console.log("🎲 ChessGameClient constructor called");
-        
-        // Core game state
         this.socket = io();
         this.chess = new Chess();
         this.playerRole = null;
@@ -119,28 +99,21 @@ class ChessGameClient {
         this.premoveFrom = null;
         this.premoveTo = null;
         this.moveCount = 0;
+        this.capturesCount = 0;
+        this.checksCount = 0;
         this.gameStartTime = null;
         this.timerInterval = null;
         this.isFlipped = false;
         
-        console.log("🎯 Game ID:", this.gameId);
-        console.log("📦 Chess instance created");
-        
-        // DOM elements
         this.initializeElements();
-        
-        // Setup
         this.setupEventListeners();
         this.setupSocketListeners();
         this.setupAnimations();
         this.setupDragAndDrop();
         
-        // Initial render
-        console.log("🎨 Rendering initial board...");
         this.renderBoard();
         this.animatePageLoad();
         
-        // Join game
         this.joinGame();
         
         console.log("✅ ChessElite initialized successfully");
@@ -153,8 +126,6 @@ class ChessGameClient {
     }
 
     initializeElements() {
-        console.log("🔍 Initializing DOM elements...");
-        
         this.elements = {
             board: document.getElementById('chessboard'),
             roleInfo: document.getElementById('roleInfo'),
@@ -167,6 +138,8 @@ class ChessGameClient {
             playersStatus: document.getElementById('playersStatus'),
             moveCount: document.getElementById('moveCount'),
             gameTime: document.getElementById('gameTime'),
+            capturesCount: document.getElementById('capturesCount'),
+            checksCount: document.getElementById('checksCount'),
             whiteAdvantage: document.getElementById('whiteAdvantage'),
             blackAdvantage: document.getElementById('blackAdvantage'),
             gameOverModal: document.getElementById('gameOverModal'),
@@ -177,20 +150,12 @@ class ChessGameClient {
             blackPlayerRating: document.querySelector('.black-player .rating-badge')
         };
 
-        console.log("📋 Board element found:", !!this.elements.board);
-        
         if (!this.elements.board) {
-            console.error("❌ Chess board element not found!");
             throw new Error("Chess board element not found");
         }
-        
-        console.log("✅ All elements initialized");
     }
 
     setupEventListeners() {
-        console.log("🎧 Setting up event listeners...");
-        
-        // Control buttons
         const buttons = {
             flipBoard: document.getElementById('flipBoardBtn'),
             resign: document.getElementById('resignBtn'),
@@ -209,7 +174,6 @@ class ChessGameClient {
         if (buttons.modalRematch) buttons.modalRematch.onclick = () => this.requestRematch();
         if (buttons.modalClose) buttons.modalClose.onclick = () => this.closeModal();
 
-        // History navigation
         const historyButtons = {
             first: document.getElementById('firstMoveBtn'),
             prev: document.getElementById('prevMoveBtn'),
@@ -221,14 +185,16 @@ class ChessGameClient {
         if (historyButtons.prev) historyButtons.prev.onclick = () => this.navigateHistory('prev');
         if (historyButtons.next) historyButtons.next.onclick = () => this.navigateHistory('next');
         if (historyButtons.last) historyButtons.last.onclick = () => this.navigateHistory('last');
-        
-        console.log("✅ Event listeners setup complete");
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'f' || e.key === 'F') {
+                this.flipBoard();
+            }
+        });
     }
 
     setupDragAndDrop() {
-        console.log("🖱️ Setting up drag and drop...");
-        
-        // Enable drag and drop on the board
         this.elements.board.addEventListener('dragover', (e) => {
             e.preventDefault();
             e.dataTransfer.dropEffect = 'move';
@@ -248,13 +214,9 @@ class ChessGameClient {
                 this.draggedPieceSquare = null;
             }
         });
-        
-        console.log("✅ Drag and drop setup complete");
     }
 
     setupSocketListeners() {
-        console.log("🔌 Setting up socket listeners...");
-        
         this.socket.on('connect', () => {
             console.log('✅ Socket connected:', this.socket.id);
             this.updateConnectionStatus(true);
@@ -299,6 +261,15 @@ class ChessGameClient {
 
         this.socket.on('moveMade', (data) => {
             console.log('♟️ Move made:', data.move.san);
+            
+            // Check if this move is a capture
+            if (data.move.captured) {
+                this.capturesCount++;
+                if (this.elements.capturesCount) {
+                    this.elements.capturesCount.textContent = this.capturesCount;
+                }
+            }
+            
             this.chess.move(data.move);
             this.updateGameState(data.gameState);
             this.renderBoard();
@@ -306,12 +277,10 @@ class ChessGameClient {
             this.animateMove(data.move);
             this.moveCount++;
             
-            // Update move count display
             if (this.elements.moveCount) {
                 this.elements.moveCount.textContent = Math.floor(this.moveCount / 2);
             }
             
-            // Execute premove if exists and it's our turn now
             if (this.premoveFrom && this.premoveTo && this.chess.turn() === this.playerRole) {
                 setTimeout(() => {
                     if (this.chess.turn() === this.playerRole) {
@@ -332,6 +301,10 @@ class ChessGameClient {
 
         this.socket.on('check', () => {
             console.log('⚔️ Check!');
+            this.checksCount++;
+            if (this.elements.checksCount) {
+                this.elements.checksCount.textContent = this.checksCount;
+            }
             this.showToast('Check!', 'warning');
             this.animateCheck();
         });
@@ -345,7 +318,6 @@ class ChessGameClient {
             console.log('👥 Players update:', data);
             this.updatePlayersStatus(data);
             
-            // Update player info displays
             if (data.playerInfo) {
                 if (data.playerInfo.white && this.elements.whitePlayerName) {
                     this.elements.whitePlayerName.textContent = data.playerInfo.white.username;
@@ -381,47 +353,13 @@ class ChessGameClient {
             this.resetGame();
             this.showToast('Game reset! Good luck!', 'success');
         });
-        
-        console.log("✅ Socket listeners setup complete");
     }
 
     setupAnimations() {
-        console.log("🎬 Setting up animations...");
-        
-        // Animate gradient orbs
-        gsap.to('.orb-1', {
-            x: '+=50',
-            y: '-=50',
-            duration: 20,
-            repeat: -1,
-            yoyo: true,
-            ease: 'sine.inOut'
-        });
-
-        gsap.to('.orb-2', {
-            x: '-=40',
-            y: '+=40',
-            duration: 15,
-            repeat: -1,
-            yoyo: true,
-            ease: 'sine.inOut'
-        });
-
-        gsap.to('.orb-3', {
-            x: '+=30',
-            y: '+=30',
-            duration: 18,
-            repeat: -1,
-            yoyo: true,
-            ease: 'sine.inOut'
-        });
-        
-        console.log("✅ Animations setup complete");
+        // Subtle background animations would go here
     }
 
     animatePageLoad() {
-        console.log("🎨 Animating page load...");
-        
         gsap.from('.game-header', {
             y: -50,
             opacity: 0,
@@ -472,12 +410,11 @@ class ChessGameClient {
 
         if (toSquare) {
             gsap.fromTo(toSquare, 
-                { scale: 1.2, backgroundColor: 'rgba(0, 212, 255, 0.5)' },
+                { scale: 1.2, backgroundColor: 'rgba(129, 182, 76, 0.5)' },
                 { scale: 1, backgroundColor: 'transparent', duration: 0.5, ease: 'power2.out' }
             );
         }
 
-        // Piece animation
         const piece = toSquare?.querySelector('.piece');
         if (piece) {
             gsap.from(piece, {
@@ -551,7 +488,7 @@ class ChessGameClient {
                 top: ${rect.top + rect.height / 2}px;
                 width: 8px;
                 height: 8px;
-                background: linear-gradient(135deg, #00d4ff, #7c3aed);
+                background: linear-gradient(135deg, #81b64c, #6fa63e);
                 border-radius: 50%;
                 pointer-events: none;
                 z-index: 9999;
@@ -580,20 +517,11 @@ class ChessGameClient {
     }
 
     renderBoard() {
-        console.log("🎨 Rendering board...");
-        
-        if (!this.elements.board) {
-            console.error("❌ Board element not found in renderBoard!");
-            return;
-        }
+        if (!this.elements.board) return;
         
         this.elements.board.innerHTML = '';
         const board = this.chess.board();
-        
-        console.log("🔍 Board orientation:", this.isFlipped ? 'flipped (black)' : 'normal (white)');
-        console.log("♟️ Rendering 64 squares...");
 
-        let squareCount = 0;
         for (let row = 0; row < 8; row++) {
             for (let col = 0; col < 8; col++) {
                 const displayRow = this.isFlipped ? 7 - row : row;
@@ -602,11 +530,8 @@ class ChessGameClient {
                 
                 const squareElement = this.createSquareElement(displayRow, displayCol, piece);
                 this.elements.board.appendChild(squareElement);
-                squareCount++;
             }
         }
-        
-        console.log(`✅ Rendered ${squareCount} squares`);
 
         this.updateTurnIndicator();
     }
@@ -621,7 +546,6 @@ class ChessGameClient {
         square.dataset.col = col;
         square.dataset.square = squareNotation;
 
-        // Add coordinate labels
         if (col === 0) {
             const rankLabel = document.createElement('div');
             rankLabel.className = 'rank-label';
@@ -635,30 +559,25 @@ class ChessGameClient {
             square.appendChild(fileLabel);
         }
 
-        // Highlight selected square
         if (this.selectedSquare === squareNotation) {
             square.classList.add('selected');
         }
 
-        // Show premove indicator
         if (this.premoveFrom === squareNotation || this.premoveTo === squareNotation) {
             square.classList.add('premove');
         }
 
-        // Show possible moves
         if (this.possibleMoves.includes(squareNotation)) {
             const indicator = document.createElement('div');
             indicator.className = piece ? 'capture-indicator' : 'move-indicator';
             square.appendChild(indicator);
         }
 
-        // Add piece
         if (piece) {
             const pieceElement = this.createPieceElement(piece, squareNotation);
             square.appendChild(pieceElement);
         }
 
-        // Click handler
         square.addEventListener('click', () => this.handleSquareClick(squareNotation));
 
         return square;
@@ -669,7 +588,6 @@ class ChessGameClient {
         pieceEl.className = `piece ${piece.color === 'w' ? 'white' : 'black'}`;
         pieceEl.innerHTML = this.getPieceUnicode(piece);
         
-        // Add drag functionality
         if (this.canMovePiece(piece)) {
             pieceEl.draggable = true;
             
@@ -679,7 +597,6 @@ class ChessGameClient {
                 e.dataTransfer.effectAllowed = 'move';
                 e.dataTransfer.setData('text/plain', square);
                 
-                // Make piece semi-transparent while dragging
                 setTimeout(() => {
                     pieceEl.style.opacity = '0.5';
                 }, 0);
@@ -714,7 +631,6 @@ class ChessGameClient {
                 if (isMyTurn) {
                     this.makeMove(this.selectedSquare, square);
                 } else {
-                    // Set premove
                     this.premoveFrom = this.selectedSquare;
                     this.premoveTo = square;
                     this.showToast('Premove set', 'info', 2000);
@@ -736,7 +652,6 @@ class ChessGameClient {
         this.possibleMoves = this.chess.moves({ square, verbose: true }).map(m => m.to);
         this.renderBoard();
 
-        // Animate selection
         const squareEl = document.querySelector(`[data-square="${square}"]`);
         if (squareEl) {
             gsap.from(squareEl, {
@@ -755,9 +670,7 @@ class ChessGameClient {
 
     makeMove(from, to) {
         const move = { from, to, promotion: 'q' };
-        console.log("Making move:", move);
         
-        // Check if capture
         const capturedPiece = this.chess.get(to);
         if (capturedPiece) {
             this.animateCapture(to);
@@ -766,7 +679,6 @@ class ChessGameClient {
         this.socket.emit('move', move);
         this.clearSelection();
         
-        // Clear premove if it was executed
         this.premoveFrom = null;
         this.premoveTo = null;
     }
@@ -788,7 +700,6 @@ class ChessGameClient {
         this.updateCapturedPieces();
         this.updateMaterialAdvantage();
         
-        // Check if in check using chess.js methods
         const inCheck = this.chess.in_check ? this.chess.in_check() : false;
         
         if (inCheck && this.elements.statusInfo) {
@@ -820,7 +731,7 @@ class ChessGameClient {
 
     renderCapturedPieces(pieces, color) {
         if (pieces.length === 0) {
-            return '<span style="opacity: 0.5; font-size: 14px;">None</span>';
+            return '<span style="opacity: 0.4; font-size: 13px;">None</span>';
         }
         
         return pieces.map(p => {
@@ -885,7 +796,6 @@ class ChessGameClient {
         if (turnIcon) turnIcon.textContent = turn === 'w' ? '⚪' : '⚫';
         if (turnText) turnText.textContent = `${turn === 'w' ? 'White' : 'Black'} to move`;
         
-        // Animate turn change
         gsap.from(this.elements.turnIndicator, {
             scale: 1.1,
             duration: 0.3,
@@ -906,14 +816,11 @@ class ChessGameClient {
             <span>${move.san}</span>
         `;
         
-        // Remove empty state if exists
         const emptyState = this.elements.moveHistory.querySelector('.empty-state');
         if (emptyState) emptyState.remove();
         
-        // Add to bottom instead of top
         this.elements.moveHistory.appendChild(moveItem);
         
-        // Animate
         gsap.from(moveItem, {
             x: -20,
             opacity: 0,
@@ -921,7 +828,6 @@ class ChessGameClient {
             ease: 'power3.out'
         });
 
-        // Scroll to bottom to show latest move
         this.elements.moveHistory.scrollTop = this.elements.moveHistory.scrollHeight;
     }
 
@@ -947,7 +853,6 @@ class ChessGameClient {
         this.showGameOverModal(title, message, icon);
         this.showToast(message, 'info', 5000);
         
-        // Show rematch button
         const rematchBtn = document.getElementById('rematchBtn');
         if (rematchBtn) {
             rematchBtn.style.display = 'flex';
@@ -959,7 +864,6 @@ class ChessGameClient {
             });
         }
         
-        // Stop timer
         if (this.timerInterval) {
             clearInterval(this.timerInterval);
         }
@@ -979,7 +883,6 @@ class ChessGameClient {
         
         modal.classList.add('show');
         
-        // Animate modal
         gsap.from('.modal', {
             scale: 0.5,
             rotation: -5,
@@ -1094,7 +997,7 @@ class ChessGameClient {
     flipBoard() {
         this.isFlipped = !this.isFlipped;
         this.renderBoard();
-        this.showToast('Board flipped', 'info');
+        this.showToast('Board flipped', 'info', 1500);
     }
 
     navigateHistory(direction) {
@@ -1103,6 +1006,8 @@ class ChessGameClient {
 
     resetGame() {
         this.moveCount = 0;
+        this.capturesCount = 0;
+        this.checksCount = 0;
         this.selectedSquare = null;
         this.possibleMoves = [];
         this.premoveFrom = null;
@@ -1110,6 +1015,8 @@ class ChessGameClient {
         this.gameStartTime = Date.now();
         
         if (this.elements.moveCount) this.elements.moveCount.textContent = '0';
+        if (this.elements.capturesCount) this.elements.capturesCount.textContent = '0';
+        if (this.elements.checksCount) this.elements.checksCount.textContent = '0';
         if (this.elements.moveHistory) {
             this.elements.moveHistory.innerHTML = `
                 <div class="empty-state">
@@ -1144,25 +1051,38 @@ class ChessGameClient {
         
         this.elements.toastContainer.appendChild(toast);
         
-        // Auto remove
+        gsap.from(toast, {
+            x: 100,
+            opacity: 0,
+            duration: 0.4,
+            ease: 'power3.out'
+        });
+        
         setTimeout(() => {
-            toast.classList.add('hide');
-            setTimeout(() => toast.remove(), 300);
+            gsap.to(toast, {
+                x: 100,
+                opacity: 0,
+                duration: 0.3,
+                ease: 'power3.in',
+                onComplete: () => toast.remove()
+            });
         }, duration);
     }
 }
 
 function showCriticalError(message) {
     document.body.innerHTML = `
-        <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #0a0e27; color: white; text-align: center; padding: 20px;">
+        <div style="display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #161512; color: white; text-align: center; padding: 20px;">
             <div>
                 <h1 style="font-size: 48px; margin-bottom: 20px;">⚠️</h1>
                 <h2 style="margin-bottom: 10px;">Error Loading Chess Game</h2>
                 <p style="color: #9ca3af; margin-bottom: 20px;">${message}</p>
-                <button onclick="location.reload()" style="padding: 12px 24px; background: linear-gradient(135deg, #00d4ff, #7c3aed); border: none; border-radius: 8px; color: white; font-weight: 600; cursor: pointer;">
+                <button onclick="location.reload()" style="padding: 12px 24px; background: linear-gradient(135deg, #81b64c, #6fa63e); border: none; border-radius: 8px; color: white; font-weight: 600; cursor: pointer;">
                     Reload Page
                 </button>
             </div>
         </div>
     `;
 }
+
+console.log("✅ ChessElite Client Loaded Successfully");
