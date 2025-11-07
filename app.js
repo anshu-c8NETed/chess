@@ -21,7 +21,7 @@ class ChessGame {
         this.gameId = gameId;
         this.chess = new Chess();
         this.players = { white: null, black: null };
-        this.playerInfo = { white: null, black: null }; // Store username and rating
+        this.playerInfo = { white: null, black: null };
         this.spectators = new Set();
         this.moveHistory = [];
         this.gameStartTime = Date.now();
@@ -30,7 +30,7 @@ class ChessGame {
     addPlayer(socketId, color, info) {
         if (color === 'white' || color === 'black') {
             this.players[color] = socketId;
-            this.playerInfo[color] = info; // Store player info
+            this.playerInfo[color] = info;
             return true;
         }
         return false;
@@ -118,7 +118,6 @@ io.on('connection', (socket) => {
         currentGame = games.get(gameId);
         socket.join(gameId);
 
-        // Assign role
         if (!currentGame.players.white) {
             currentGame.addPlayer(socket.id, 'white', playerInfo);
             playerRole = 'w';
@@ -130,7 +129,6 @@ io.on('connection', (socket) => {
             socket.emit('playerRole', { role: 'b', color: 'black' });
             console.log(`Player ${socket.id} joined as Black in game ${gameId}`);
             
-            // Start game when both players join
             io.to(gameId).emit('gameStart');
         } else {
             currentGame.addSpectator(socket.id);
@@ -138,7 +136,6 @@ io.on('connection', (socket) => {
             console.log(`Player ${socket.id} joined as Spectator in game ${gameId}`);
         }
 
-        // Send current game state to all players
         io.to(gameId).emit('gameState', currentGame.getGameState());
         io.to(gameId).emit('playersUpdate', {
             white: currentGame.players.white !== null,
@@ -170,7 +167,6 @@ io.on('connection', (socket) => {
                     gameState: gameState
                 });
 
-                // Check for game over conditions
                 if (gameState.isCheckmate) {
                     io.to(currentGame.gameId).emit('gameOver', {
                         result: 'checkmate',
@@ -258,7 +254,6 @@ io.on('connection', (socket) => {
                 playerInfo: currentGame.playerInfo
             });
 
-            // Clean up empty games
             if (!currentGame.players.white && !currentGame.players.black && currentGame.spectators.size === 0) {
                 games.delete(currentGame.gameId);
                 console.log(`Game ${currentGame.gameId} deleted (no players)`);
